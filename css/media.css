@@ -1,0 +1,88 @@
+.site-polls-popup
+{
+	position: fixed;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	z-index: 99990;
+	background: rgba(0, 0, 0, 0.8);
+}
+
+.site-polls-popup.site-polls-inactive
+{
+	display: none;
+}
+
+.site-polls-popup-content
+{
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	margin: -120px 0px 0px -250px;
+	width: 480px;
+	min-height: 100px;
+	max-width: 100%;
+	background: #ffffff;
+	padding: 40px;
+}
+
+.site-polls-popup-button
+{
+	margin: 2.5em 0 0 0;
+}
+
+.site-polls-popup-close {
+	position: absolute;
+	right: 10px;
+	top: 10px;
+	width: 32px;
+	height: 32px;
+}
+
+.site-polls-popup-close a {
+	width: 32px;
+	height: 32px;
+	display: block;
+	line-height: 32px;
+	font-size: 26px;
+	box-shadow: none;
+	text-decoration: none;
+}
+
+.site-polls-popup-close a:hover {
+	box-shadow: none;
+	text-decoration: none;
+}
+
+.site-polls-popup-title {
+	font-weight: bold;
+	font-size: 2em;
+	margin: 0 0 1.1em 0;
+}
+
+.site-polls-popup-description {
+	font-weight: normal;
+	font-size: 1.1em;
+	margin: 0 0 0.5em 0;
+}
+
+.site-polls-popup .site-polls-select {
+	width: 100%;
+	margin: 0;
+}
+
+@media (max-width: 639px) {
+
+.site-polls-popup-content
+{
+	position: absolute;
+	top: 50%;
+	left: 10px;
+	right: 10px;
+	margin: -100px 0px 0px 0px;
+	width: auto;
+	padding: 20px;
+}
+
+}

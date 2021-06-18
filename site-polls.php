@@ -40,26 +40,21 @@ add_action('wp_ajax_nopriv_site_polls_results', 'site_polls_results');
 register_activation_hook(__FILE__, 'site_polls_activate');
 register_uninstall_hook(__FILE__, 'site_polls_uninstall');
 
-if (is_multisite())
-{
+if (is_multisite()) {
 	add_action('wpmu_new_blog', 'site_polls_wpmu_new_blog', 10, 6);
 	add_filter('wpmu_drop_tables', 'site_polls_wpmu_drop_tables', 10, 1);
 }
 
 // Classes
 
-class SitePollsWidget extends WP_Widget
-{
-	function __construct()
-	{
+class SitePollsWidget extends WP_Widget {
+	function __construct() {
 		parent::__construct('site-polls-widget', 'Site Polls', array('description' => __('Widget that displays AJAX polls.', 'site-polls')));
 	}
 
-	function widget($args, $instance)
-	{
+	function widget($args, $instance) {
 		// Get poll
-		if (empty($instance['poll_id']))
-		{
+		if (empty($instance['poll_id'])) {
 			return;
 		}
 
@@ -69,52 +64,43 @@ class SitePollsWidget extends WP_Widget
 
 		echo $args['before_widget'];
 
-		if (!empty($instance['title']))
-		{
+		if (!empty($instance['title'])) {
 			echo $args['before_title'] . $instance['title'] . $args['after_title'];
 		}
 
 		$poll = site_polls_get($poll_id);
 
-		if (!empty($poll) && !empty($poll['poll']))
-		{
+		if (!empty($poll) && !empty($poll['poll'])) {
 			echo site_polls_render($poll);
-		}
-		else
-		{
+		} else {
 			echo '<p><b>' . __('Error: no poll found with the specified ID', 'site-polls') . '</b></p>';
 		}
 
 		echo $args['after_widget'];
 	}
 
-	function update($new_instance, $old_instance)
-	{
+	function update($new_instance, $old_instance) {
 		$instance = array();
 
-		if (!empty($new_instance['title']))
-		{
+		if (!empty($new_instance['title'])) {
 			$instance['title'] = sanitize_text_field($new_instance['title']);
 		}
 
-		if (!empty($new_instance['poll_id']))
-		{
+		if (!empty($new_instance['poll_id'])) {
 			$instance['poll_id'] = (int)$new_instance['poll_id'];
 		}
 
 		return $instance;
 	}
 
-	function form($instance)
-	{
+	function form($instance) {
 		$title = isset( $instance['title'] ) ? esc_attr($instance['title']) : '';
 		$poll_id = isset( $instance['poll_id'] ) ? $instance['poll_id'] : '';
 
 		$polls = site_polls_get_all();
 
-		if ($polls && count($polls) > 0)
-		{
-?>
+		if ($polls && count($polls) > 0) {
+	?>
 	<p>
 		<label for="<?php echo $this->get_field_id('title'); ?>"><?php _e('Title:', 'site-polls') ?></label>
 		<input type="text" class="widefat" id="<?php echo $this->get_field_id('title'); ?>" name="<?php echo $this->get_field_name('title'); ?>" value="<?php echo $title; ?>" />
@@ -125,17 +111,13 @@ class SitePollsWidget extends WP_Widget
 	<p>
 	<select style="width:100%;" id="<?php echo $this->get_field_id('poll_id'); ?>" name="<?php echo $this->get_field_name('poll_id'); ?>">
 		<option value="0"><?php _e('&mdash; Select &mdash;', 'site-polls') ?></option>
-<?php
-			foreach ($polls as $item)
-			{
+	<?php
+			foreach ($polls as $item) {
 				$item_title = '';
 
-				if (!empty($item['title']))
-				{
+				if (!empty($item['title'])) {
 					$item_title = __('ID #', 'site-polls') . $item['id'] . ': ' . esc_html(stripslashes($item['title']));
-				}
-				else
-				{
+				} else {
 					$item_title = __('ID #', 'site-polls') . $item['id'] . ': ' . __('(No title)', 'site-polls');
 				}
 
@@ -143,13 +125,11 @@ class SitePollsWidget extends WP_Widget
 					. selected($poll_id, $item['id'], false)
 					. '>' . $item_title . '</option>';
 			}
-?>
+	?>
 	</select>
 	</p>
 <?php
-		}
-		else
-		{
+		} else {
 			echo '<p>'. sprintf(__('No polls have been created yet. <a href="%s">Create some</a>.', 'site-polls'), admin_url('admin.php?page=' . SITE_POLLS_ADMIN_PAGE)) . '</p>';
 		}
 	}
@@ -157,16 +137,13 @@ class SitePollsWidget extends WP_Widget
 
 // Functions
 
-function site_polls_checked($value_name)
-{
-	if (!empty($_POST[$value_name]))
-	{
+function site_polls_checked($value_name) {
+	if (!empty($_POST[$value_name])) {
 		$post_value = trim(strtolower($_POST[$value_name]));
 
 		if (($post_value == 'on') ||
 			($post_value == 'true') ||
-			($post_value == 'yes'))
-		{
+			($post_value == 'yes')) {
 			return true;
 		}
 	}
@@ -174,12 +151,10 @@ function site_polls_checked($value_name)
 	return false;
 }
 
-function site_polls_admin_scripts($name)
-{
+function site_polls_admin_scripts($name) {
 	// Register plugin stylesheet file
 	if ((stripos($name, SITE_POLLS_ADMIN_PAGE) !== FALSE) ||
-		(stripos($name, SITE_POLLS_SETTINGS_PAGE) !== FALSE))
-	{
+		(stripos($name, SITE_POLLS_SETTINGS_PAGE) !== FALSE)) {
 		wp_register_style('site_polls_admin_style', plugins_url('css/admin-style.css', __FILE__), array(), SITE_POLLS_VERSION);
 		wp_register_script('site_polls_admin_script', plugins_url('js/management.js', __FILE__), array('jquery'), SITE_POLLS_VERSION);
 
@@ -188,32 +163,26 @@ function site_polls_admin_scripts($name)
     }
 }
 
-function site_polls_media_buttons($editor_id = 'content')
-{
+function site_polls_media_buttons($editor_id = 'content') {
 	printf( '<button type="button" class="button site-polls-media-insert" data-editor="%s">%s</button>',
 		esc_attr( $editor_id ),
 		__( 'Add Poll' )
 	);
 }
 
-function site_polls_media_inline()
-{
+function site_polls_media_inline() {
 	$polls_js_data = array();
 
 	$polls = site_polls_get_all();
 
-	foreach ($polls as $item)
-	{
+	foreach ($polls as $item) {
 		$new_item = array();
 
 		$new_item['id'] = $item['id'];
 
-		if (!empty($item['title']))
-		{
+		if (!empty($item['title'])) {
 			$new_item['title'] = __('ID #', 'site-polls') . $item['id'] . ': ' . esc_html(stripslashes($item['title']));
-		}
-		else
-		{
+		} else {
 			$new_item['title'] = __('ID #', 'site-polls') . $item['id'] . ': ' . __('(No title)', 'site-polls');
 		}
 
@@ -246,8 +215,7 @@ var site_polls_media_ids = <?php echo json_encode($polls_js_data) ?>;
 <?php
 }
 
-function site_polls_enqueue_media()
-{
+function site_polls_enqueue_media() {
 	wp_register_script('site_polls_media_script', plugins_url('js/media.js', __FILE__), array('jquery'), SITE_POLLS_VERSION);
 	wp_enqueue_script('site_polls_media_script');
 
@@ -257,8 +225,7 @@ function site_polls_enqueue_media()
 	add_action('admin_footer', 'site_polls_media_inline');
 }
 
-function site_polls_enqueue_scripts()
-{
+function site_polls_enqueue_scripts() {
 	wp_register_style('site_polls_style', plugins_url('/css/polls.css' , __FILE__), array(), SITE_POLLS_VERSION);
 	wp_register_script('site_polls_script', plugins_url('/js/polls.js' , __FILE__), array('jquery'), SITE_POLLS_VERSION);
 
@@ -266,8 +233,7 @@ function site_polls_enqueue_scripts()
 	wp_enqueue_script('site_polls_script');
 }
 
-function site_polls_create_db()
-{
+function site_polls_create_db() {
 	// Create required database structure
 
 	global $wpdb;
@@ -302,22 +268,17 @@ function site_polls_create_db()
 	');
 }
 
-function site_polls_activate($networkwide)
-{
+function site_polls_activate($networkwide) {
 	global $wpdb;
 
-	if (is_multisite())
-	{
-		if ($networkwide)
-		{
+	if (is_multisite()) {
+		if ($networkwide) {
 			$old_blog = $wpdb->blogid;
 
 			$blogids = $wpdb->get_col("SELECT blog_id FROM $wpdb->blogs");
 
-			if ($blogids && (!empty($blogids)))
-			{
-				foreach ($blogids as $blog_id)
-				{
+			if ($blogids && (!empty($blogids))) {
+				foreach ($blogids as $blog_id) {
 					switch_to_blog($blog_id);
 
 					site_polls_create_db();
@@ -333,11 +294,9 @@ function site_polls_activate($networkwide)
 	site_polls_create_db();
 }
 
-function site_polls_remove_data()
-{
+function site_polls_remove_data() {
 	// Drop all tables in case if user wants to remove all information
-	if (get_option('site_polls_remove_db', false))
-	{
+	if (get_option('site_polls_remove_db', false)) {
 		global $wpdb;
 
 		$table_prefix = $wpdb->prefix . 'site_';
@@ -350,20 +309,16 @@ function site_polls_remove_data()
 	}
 }
 
-function site_polls_uninstall()
-{
+function site_polls_uninstall() {
 	global $wpdb;
 
-	if (is_multisite())
-	{
+	if (is_multisite()) {
 		$old_blog = $wpdb->blogid;
 
 		$blogids = $wpdb->get_col("SELECT blog_id FROM $wpdb->blogs");
 
-		if ($blogids && (!empty($blogids)))
-		{
-			foreach ($blogids as $blog_id)
-			{
+		if ($blogids && (!empty($blogids))) {
+			foreach ($blogids as $blog_id) {
 				switch_to_blog($blog_id);
 
 				site_polls_remove_data();
@@ -378,12 +333,10 @@ function site_polls_uninstall()
 	site_polls_remove_data();
 }
 
-function site_polls_wpmu_new_blog($blog_id, $user_id, $domain, $path, $site_id, $meta)
-{
+function site_polls_wpmu_new_blog($blog_id, $user_id, $domain, $path, $site_id, $meta) {
 	global $wpdb;
 
-	if (is_plugin_active_for_network(basename(dirname(__FILE__)) . '/' . basename(__FILE__)))
-	{
+	if (is_plugin_active_for_network(basename(dirname(__FILE__)) . '/' . basename(__FILE__))) {
 		$old_blog = $wpdb->blogid;
 
 		switch_to_blog($blog_id);
@@ -394,8 +347,7 @@ function site_polls_wpmu_new_blog($blog_id, $user_id, $domain, $path, $site_id, 
 	}
 }
 
-function site_polls_wpmu_drop_tables($tables)
-{
+function site_polls_wpmu_drop_tables($tables) {
 	global $wpdb;
 
 	$table_prefix = $wpdb->prefix . 'site_';
@@ -406,30 +358,25 @@ function site_polls_wpmu_drop_tables($tables)
 	return $tables;
 }
 
-function site_polls_init()
-{
+function site_polls_init() {
 	add_shortcode('site_poll', 'site_polls_show');
 }
 
-function site_polls_widgets_init()
-{
+function site_polls_widgets_init() {
 	register_widget('SitePollsWidget');
 }
 
-function site_polls_vote()
-{
+function site_polls_vote() {
 	$result = array();
 
 	if (	!empty($_POST['site_poll_id']) &&
 			!empty($_POST['site_poll_answer_ids']) &&
-			is_array($_POST['site_poll_answer_ids']))
-	{
+			is_array($_POST['site_poll_answer_ids'])) {
 		global $wpdb;
 
 		$table_prefix = $wpdb->prefix . 'site_';
 
-		foreach ($_POST['site_poll_answer_ids'] as $answer_id)
-		{
+		foreach ($_POST['site_poll_answer_ids'] as $answer_id) {
 			$wpdb->query('
 				UPDATE `' . $table_prefix . 'polls_answers`
 				SET `votes` = (votes+1)
@@ -458,13 +405,11 @@ function site_polls_vote()
 	exit;
 }
 
-function site_polls_results()
-{
+function site_polls_results() {
 	$result = array();
 
 	if (	!empty($_POST['site_poll_check_ids']) &&
-			is_array($_POST['site_poll_check_ids']))
-	{
+			is_array($_POST['site_poll_check_ids'])) {
 		global $wpdb;
 
 		$table_prefix = $wpdb->prefix . 'site_';
@@ -474,8 +419,7 @@ function site_polls_results()
 
 		$polls = array();
 
-		foreach ($_POST['site_poll_check_ids'] as $poll_id)
-		{
+		foreach ($_POST['site_poll_check_ids'] as $poll_id) {
 			$new_item = array();
 
 			$new_item['poll_id'] = $poll_id;
@@ -503,26 +447,21 @@ function site_polls_results()
 	exit;
 }
 
-function site_polls_do_shortcode($text)
-{
-	if (stripos($text, 'site_poll') !== FALSE)
-	{
+function site_polls_do_shortcode($text) {
+	if (stripos($text, 'site_poll') !== FALSE) {
 		return do_shortcode($text);
 	}
 
 	return $text;
 }
 
-function site_polls_show($atts, $content = null)
-{
+function site_polls_show($atts, $content = null) {
 	extract(shortcode_atts(array('id' => '0'), $atts));
 
-	if (!empty($id))
-	{
+	if (!empty($id)) {
 		$poll = site_polls_get($id);
 
-		if (!empty($poll) && !empty($poll['poll']))
-		{
+		if (!empty($poll) && !empty($poll['poll'])) {
 			return site_polls_render($poll);
 		}
 	}
@@ -530,55 +469,40 @@ function site_polls_show($atts, $content = null)
 	return '<p><b>' . __('Error: no poll found with the specified ID', 'site-polls') . '</b></p>';
 }
 
-function site_polls_unserialize_poll(&$poll)
-{
-	if (!empty($poll['config']))
-	{
+function site_polls_unserialize_poll(&$poll) {
+	if (!empty($poll['config'])) {
 		$config = unserialize($poll['config']);
 
-		if ((!empty($config)) && is_array($config))
-		{
+		if ((!empty($config)) && is_array($config)) {
 			$poll['config'] = $config;
-		}
-		else
-		{
+		} else {
 			$poll['config'] = null;
 		}
-	}
-	else
-	{
+	} else {
 		$poll['config'] = null;
 	}
 
-	if (!empty($poll['style']))
-	{
+	if (!empty($poll['style'])) {
 		$style = unserialize($poll['style']);
 
-		if ((!empty($style)) && is_array($style))
-		{
+		if ((!empty($style)) && is_array($style)) {
 			$poll['style'] = $style;
-		}
-		else
-		{
+		} else {
 			$poll['style'] = null;
 		}
-	}
-	else
-	{
+	} else {
 		$poll['style'] = null;
 	}
 }
 
-function site_polls_get($id)
-{
+function site_polls_get($id) {
 	global $wpdb;
 
 	$table_prefix = $wpdb->prefix . 'site_';
 
 	$poll_base = $wpdb->get_row('SELECT * FROM `' . $table_prefix . 'polls` WHERE id = ' . intval($id) . ';', ARRAY_A);
 
-	if (!empty($poll_base))
-	{
+	if (!empty($poll_base)) {
 		$poll_answers = $wpdb->get_results('
 			SELECT * FROM `' . $table_prefix . 'polls_answers`
 			WHERE poll_id = ' . intval($id) . '
@@ -597,8 +521,7 @@ function site_polls_get($id)
 	return null;
 }
 
-function site_polls_get_range($current_page, $items_per_page)
-{
+function site_polls_get_range($current_page, $items_per_page) {
 	global $wpdb;
 
 	$table_prefix = $wpdb->prefix . 'site_';
@@ -608,10 +531,8 @@ function site_polls_get_range($current_page, $items_per_page)
 		ORDER BY id ASC
 		LIMIT ' . $current_page * $items_per_page.', ' . $items_per_page . ';', ARRAY_A);
 
-	if (!empty($polls) && is_array($polls))
-	{
-		foreach ($polls as $poll_key => $poll)
-		{
+	if (!empty($polls) && is_array($polls)) {
+		foreach ($polls as $poll_key => $poll) {
 			site_polls_unserialize_poll($polls[$poll_key]);
 		}
 	}
@@ -619,8 +540,7 @@ function site_polls_get_range($current_page, $items_per_page)
 	return $polls;
 }
 
-function site_polls_get_all()
-{
+function site_polls_get_all() {
 	global $wpdb;
 
 	$table_prefix = $wpdb->prefix . 'site_';
@@ -628,10 +548,8 @@ function site_polls_get_all()
 	$polls = $wpdb->get_results('
 		SELECT * FROM `' . $table_prefix . 'polls` ORDER BY id ASC;', ARRAY_A);
 
-	if (!empty($polls) && is_array($polls))
-	{
-		foreach ($polls as $poll_key => $poll)
-		{
+	if (!empty($polls) && is_array($polls)) {
+		foreach ($polls as $poll_key => $poll) {
 			site_polls_unserialize_poll($polls[$poll_key]);
 		}
 	}
@@ -639,8 +557,7 @@ function site_polls_get_all()
 	return $polls;
 }
 
-function site_polls_get_all_count()
-{
+function site_polls_get_all_count() {
 	global $wpdb;
 
 	$table_prefix = $wpdb->prefix . 'site_';
@@ -648,14 +565,12 @@ function site_polls_get_all_count()
 	return $wpdb->get_var('SELECT COUNT(id) FROM `' . $table_prefix . 'polls`;');
 }
 
-function site_polls_render($poll)
-{
+function site_polls_render($poll) {
 	$result = '';
 
 	$theme = "blue";
 
-	if (!empty($poll['poll']['style']['theme']))
-	{
+	if (!empty($poll['poll']['style']['theme'])) {
 		$theme = $poll['poll']['style']['theme'];
 	}
 
@@ -663,14 +578,11 @@ function site_polls_render($poll)
 	$max_answers = intval($poll['poll']['max_answers']);
 	$lifetime = intval($poll['poll']['lifetime']);
 
-	if ($poll_type == SITE_POLLS_TYPE_STANDARD)
-	{
+	if ($poll_type == SITE_POLLS_TYPE_STANDARD) {
 		$already_voted = false;
 
-		if (!empty($poll['poll']['lifetime']) && (intval($poll['poll']['lifetime']) > 0))
-		{
-			if (!empty($_COOKIE['SITE_POLL_' . $poll['poll']['id'] . '_VOTED']))
-			{
+		if (!empty($poll['poll']['lifetime']) && (intval($poll['poll']['lifetime']) > 0)) {
+			if (!empty($_COOKIE['SITE_POLL_' . $poll['poll']['id'] . '_VOTED'])) {
 				$already_voted = trim(strtolower($_COOKIE['SITE_POLL_' . $poll['poll']['id'] . '_VOTED'])) == 'yes';
 			}
 		}
@@ -683,8 +595,7 @@ function site_polls_render($poll)
 		<input type="hidden" id="site_poll_maxanswers_' . $poll['poll']['id'] . '" value="' . $max_answers . '"/>
 		<input type="hidden" id="site_poll_adminajax_' . $poll['poll']['id'] . '" value="' . admin_url('admin-ajax.php') . '"/>';
 
-		if (!empty($poll['poll']['title']))
-		{
+		if (!empty($poll['poll']['title'])) {
 			$result .= '
 		<div class="site-poll-title">
 			<p>' . esc_html(stripslashes($poll['poll']['title'])) . '</p>
@@ -696,18 +607,13 @@ function site_polls_render($poll)
 			<div class="site-poll-answers">
 ';
 
-		if (!empty($poll['answers']) && is_array($poll['answers']))
-		{
-			foreach ($poll['answers'] as $answer)
-			{
-				if ($max_answers == 1)
-				{
+		if (!empty($poll['answers']) && is_array($poll['answers'])) {
+			foreach ($poll['answers'] as $answer) {
+				if ($max_answers == 1) {
 					$result .= '
 				<p><label><input type="radio" id="site_poll_answer_' . $answer['answer_id'] . '" name="site_poll_answer"/>&nbsp;&nbsp;' . esc_html(stripslashes($answer['title'])) . '</label></p>
 ';
-				}
-				else
-				{
+				} else {
 					$result .= '
 				<p><label><input type="checkbox" id="site_poll_answer_' . $answer['answer_id'] . '"/>&nbsp;&nbsp;' . stripslashes(($answer['title'])) . '</label></p>
 ';
@@ -718,8 +624,7 @@ function site_polls_render($poll)
 		$result .= '
 			</div>';
 
-		if (count($poll['answers']) > 0)
-		{
+		if (count($poll['answers']) > 0) {
 			$result .= '
 			<div class="site-poll-actions">
 				<p><button class="site-polls-button" onclick="site_polls_send_vote(this);">' . __('Vote!', 'site-polls') . '</button></p>
@@ -741,20 +646,16 @@ function site_polls_render($poll)
 	// Get total number of votes
 	$total_votes = 0;
 
-	if (!empty($poll['answers']) && is_array($poll['answers']))
-	{
-		foreach ($poll['answers'] as $answer)
-		{
+	if (!empty($poll['answers']) && is_array($poll['answers'])) {
+		foreach ($poll['answers'] as $answer) {
 			$total_votes += $answer['votes'];
 		}
 
 		// Show resutls
-		foreach ($poll['answers'] as $answer)
-		{
+		foreach ($poll['answers'] as $answer) {
 			$percentage = 0;
 
-			if ($total_votes > 0)
-			{
+			if ($total_votes > 0) {
 				$percentage = round($answer['votes'] / ($total_votes / 100.0), 2);
 			}
 
@@ -764,27 +665,21 @@ function site_polls_render($poll)
 					<div id="site_poll_bar_' . $answer['answer_id'] . '" class="site-poll-bar">
 ';
 
-			if ($answer['votes'] == 1)
-			{
+			if ($answer['votes'] == 1) {
 				$result .= '
 						<div class="site-poll-info">' . $percentage . '%, ' . $answer['votes'] . ' ' . __('vote', 'site-polls') . '</div>
 ';
-			}
-			else
-			{
+			} else {
 				$result .= '
 						<div class="site-poll-info">' . $percentage . '%, ' . $answer['votes'] . ' ' . __('votes', 'site-polls') . '</div>
 ';
 			}
 
-			if ($percentage <= 0)
-			{
+			if ($percentage <= 0) {
 				$result .= '
 						<div class="site-poll-bar-bg" style="width:3px;"></div>
 ';
-			}
-			else
-			{
+			} else {
 				$result .= '
 						<div class="site-poll-bar-bg" style="width:' . $percentage . '%;"></div>
 ';
@@ -806,17 +701,14 @@ function site_polls_render($poll)
 		</div>
 	</div>
 </div>';
-	}
-	else
-	{
+	} else {
 		$result .= '<p><b>' . __('Error: unsupported poll type', 'site-polls') . '</b></p>';
 	}
 
 	return $result;
 }
 
-function site_polls_delete_poll($id)
-{
+function site_polls_delete_poll($id) {
 	global $wpdb;
 
 	$table_prefix = $wpdb->prefix . 'site_';
@@ -825,8 +717,7 @@ function site_polls_delete_poll($id)
 	$wpdb->query('DELETE FROM `' . $table_prefix . 'polls_answers` WHERE poll_id = ' . intval($id). ';');
 }
 
-function site_polls_edit_poll()
-{
+function site_polls_edit_poll() {
 	global $wpdb;
 
 	$table_prefix = $wpdb->prefix . 'site_';
@@ -836,21 +727,15 @@ function site_polls_edit_poll()
 			!empty($_POST['site_poll_answers']) &&
 			is_array($_POST['site_poll_answers']) &&
 			(count($_POST['site_poll_answers']) > 0)
-		)
-	{
+		) {
 		$max_answers = 0;
 		$lifetime = 0;
 
-		if ($_POST['site_poll_votes_type'] === 'one')
-		{
+		if ($_POST['site_poll_votes_type'] === 'one') {
 			$max_answers = 1;
-		}
-		else if ($_POST['site_poll_votes_type'] === 'any')
-		{
+		} else if ($_POST['site_poll_votes_type'] === 'any') {
 			$max_answers = 0;
-		}
-		else if ($_POST['site_poll_votes_type'] === 'number')
-		{
+		} else if ($_POST['site_poll_votes_type'] === 'number') {
 			$max_answers = intval($_POST['site_polls_max_votes']);
 		}
 
@@ -862,14 +747,11 @@ function site_polls_edit_poll()
 			WHERE `poll_id` = ' . intval($_POST['site_poll_id']) . ';
 		', ARRAY_A);
 
-		if (!empty($answers) && is_array($answers))
-		{
-			foreach ($answers as $answer)
-			{
+		if (!empty($answers) && is_array($answers)) {
+			foreach ($answers as $answer) {
 				$answer_id = $answer['answer_id'];
 
-				if (!in_array($answer_id, $_POST['site_poll_answer_ids']))
-				{
+				if (!in_array($answer_id, $_POST['site_poll_answer_ids'])) {
 					$wpdb->query('DELETE FROM `' . $table_prefix . 'polls_answers` WHERE answer_id = ' . intval($answer_id));
 				}
 			}
@@ -887,27 +769,21 @@ function site_polls_edit_poll()
 
 		$new_poll_id = intval($_POST['site_poll_id']);
 
-		foreach ($_POST['site_poll_answers'] as $key => $answer)
-		{
-			if (!empty($answer))
-			{
+		foreach ($_POST['site_poll_answers'] as $key => $answer) {
+			if (!empty($answer)) {
 				$votes = 0;
 
-				if (!empty($_POST['site_poll_answer_votes'][$key]))
-				{
+				if (!empty($_POST['site_poll_answer_votes'][$key])) {
 					$votes = intval($_POST['site_poll_answer_votes'][$key]);
 				}
 
-				if (!empty($_POST['site_poll_answer_ids'][$key]) && (intval($_POST['site_poll_answer_ids'][$key]) > 0))
-				{
+				if (!empty($_POST['site_poll_answer_ids'][$key]) && (intval($_POST['site_poll_answer_ids'][$key]) > 0)) {
 					$wpdb->query('
 						UPDATE `' . $table_prefix . 'polls_answers`
 						SET `title` = \'' . esc_sql($answer) . '\', votes = ' . $votes. '
 						WHERE `poll_id` = ' . intval($_POST['site_poll_id']) . ' AND `answer_id` = ' . intval($_POST['site_poll_answer_ids'][$key]) . ';
 					');
-				}
-				else
-				{
+				} else {
 					$wpdb->query('
 						INSERT INTO `' . $table_prefix . 'polls_answers`
 						(`poll_id`, `type`, `title`, `image`, `votes`)
@@ -920,8 +796,7 @@ function site_polls_edit_poll()
 	}
 }
 
-function site_polls_insert_poll()
-{
+function site_polls_insert_poll() {
 	global $wpdb;
 
 	$table_prefix = $wpdb->prefix . 'site_';
@@ -930,21 +805,15 @@ function site_polls_insert_poll()
 			!empty($_POST['site_poll_answers']) &&
 			is_array($_POST['site_poll_answers']) &&
 			(count($_POST['site_poll_answers']) > 0)
-		)
-	{
+		) {
 		$max_answers = 0;
 		$lifetime = 0;
 
-		if ($_POST['site_poll_votes_type'] === 'one')
-		{
+		if ($_POST['site_poll_votes_type'] === 'one') {
 			$max_answers = 1;
-		}
-		else if ($_POST['site_poll_votes_type'] === 'any')
-		{
+		} else if ($_POST['site_poll_votes_type'] === 'any') {
 			$max_answers = 0;
-		}
-		else if ($_POST['site_poll_votes_type'] === 'number')
-		{
+		} else if ($_POST['site_poll_votes_type'] === 'number') {
 			$max_answers = intval($_POST['site_polls_max_votes']);
 		}
 
@@ -953,8 +822,7 @@ function site_polls_insert_poll()
 		$style = array();
 		$style['theme'] = 'blue';
 
-		if (!empty($_POST['site_poll_theme']))
-		{
+		if (!empty($_POST['site_poll_theme'])) {
 			$style['theme'] = esc_sql($_POST['site_poll_theme']);
 		}
 
@@ -967,14 +835,11 @@ function site_polls_insert_poll()
 
 		$new_poll_id = $wpdb->insert_id;
 
-		foreach ($_POST['site_poll_answers'] as $key => $answer)
-		{
-			if (!empty($answer))
-			{
+		foreach ($_POST['site_poll_answers'] as $key => $answer) {
+			if (!empty($answer)) {
 				$votes = 0;
 
-				if (!empty($_POST['site_poll_answer_votes'][$key]))
-				{
+				if (!empty($_POST['site_poll_answer_votes'][$key])) {
 					$votes = intval($_POST['site_poll_answer_votes'][$key]);
 				}
 
@@ -989,8 +854,7 @@ function site_polls_insert_poll()
 	}
 }
 
-function site_polls_register_pages()
-{
+function site_polls_register_pages() {
     add_menu_page(
     	__('Site Polls', 'site-polls'),
     	__('Polls', 'site-polls'),
@@ -1017,8 +881,7 @@ function site_polls_register_pages()
     	'site_polls_settings_page');
 }
 
-function site_polls_info_bar()
-{
+function site_polls_info_bar() {
 ?>
 <div class="site-polls-bar">
 	<div class="site-polls-widget">
@@ -1033,8 +896,7 @@ function site_polls_info_bar()
 <?php
 }
 
-function site_polls_page()
-{
+function site_polls_page() {
 	$request_uri = $_SERVER['REQUEST_URI'];
 	$request_url = strtok($request_uri, '?');
 	$request_main = add_query_arg(array('page' => SITE_POLLS_ADMIN_PAGE), $request_url);
@@ -1043,19 +905,13 @@ function site_polls_page()
 <h1><?php _e('Site Polls', 'site-polls'); ?></h1>
 <?php
 	// Save poll if that is required
-	if (!empty($_POST['site_polls_save_poll']) && ($_POST['site_polls_save_poll'] == 'yes'))
-	{
-		if (!empty($_POST['site_poll_id']))
-		{
+	if (!empty($_POST['site_polls_save_poll']) && ($_POST['site_polls_save_poll'] == 'yes')) {
+		if (!empty($_POST['site_poll_id'])) {
 			site_polls_edit_poll();
-		}
-		else
-		{
+		} else {
 			site_polls_insert_poll();
 		}
-	}
-	else if (!empty($_GET['delete']))
-	{
+	} else if (!empty($_GET['delete'])) {
 		site_polls_delete_poll($_GET['delete']);
 	}
 
@@ -1072,8 +928,7 @@ function site_polls_page()
 	$revote_year = 365 * $seconds_per_day;
 
 	// Render user interface
-	if (!empty($_GET['add_poll']))
-	{
+	if (!empty($_GET['add_poll'])) {
 ?>
 <h3><?php _e('Add new poll to your site.', 'site-polls'); ?></h3>
 
@@ -1125,27 +980,22 @@ function site_polls_page()
 	</form>
 </div>
 <?php
-	}
-	else if (!empty($_GET['edit']))
-	{
+	} else if (!empty($_GET['edit'])) {
 		// Loading existing poll if we are editing something
 		$poll = site_polls_get($_GET['edit']);
 
 		$theme = "blue";
 
-		if (!empty($poll['poll']['style']['theme']))
-		{
+		if (!empty($poll['poll']['style']['theme'])) {
 			$theme = $poll['poll']['style']['theme'];
 		}
 
-		if (!empty($poll) && is_array($poll))
-		{
+		if (!empty($poll) && is_array($poll)) {
 			$poll_type = intval($poll['poll']['type']);
 			$max_answers = intval($poll['poll']['max_answers']);
 			$lifetime = intval($poll['poll']['lifetime']);
 
-			if ($poll_type == SITE_POLLS_TYPE_STANDARD)
-			{
+			if ($poll_type == SITE_POLLS_TYPE_STANDARD) {
 ?>
 <h3><?php _e('Edit your existing poll.', 'site-polls'); ?></h3>
 
@@ -1196,10 +1046,8 @@ function site_polls_page()
 <?php
 				$index = 1;
 
-				if (!empty($poll['answers']) && is_array($poll['answers']))
-				{
-					foreach ($poll['answers'] as $answer)
-					{
+				if (!empty($poll['answers']) && is_array($poll['answers'])) {
+					foreach ($poll['answers'] as $answer) {
 ?>
 				<p><span class="site-polls-elem"><?php echo $index; ?>. </span><input type="hidden" name="site_poll_answer_ids[<?php echo $index; ?>]" value="<?php echo $answer['answer_id']; ?>"/><span><input type="text" size="50" name="site_poll_answers[<?php echo $index; ?>]" value="<?php echo esc_html(stripslashes($answer['title'])); ?>"/></span><span class="site-polls-votes"><?php _e('Votes:', 'site-polls'); ?></span><input type="text" size="5" name="site_poll_answer_votes[<?php echo $index; ?>]" value="<?php echo $answer['votes']; ?>"/><a class="site-polls-delete" href="#" title="<?php _e('Delete', 'site-polls'); ?>" onclick="return site_polls_delete_answer(this);"><?php _e('Delete', 'site-polls'); ?></a></p>
 <?php
@@ -1215,9 +1063,7 @@ function site_polls_page()
 	</form>
 </div>
 <?php
-			}
-			else
-			{
+			} else {
 ?>
 <h3><?php _e('Edit your existing poll.', 'site-polls'); ?></h3>
 
@@ -1229,9 +1075,7 @@ function site_polls_page()
 </div>
 <?php
 			}
-		}
-		else
-		{
+		} else {
 ?>
 <h3><?php _e('Add new poll to your site.', 'site-polls'); ?></h3>
 
@@ -1240,22 +1084,18 @@ function site_polls_page()
 </div>
 <?php
 		}
-	}
-	else
-	{
+	} else {
 		$total_items = site_polls_get_all_count();
 
 		$items_per_page = 10;
 		$current_page = 1;
 		$total_pages = floor($total_items / $items_per_page);
 
-		if (($total_items % $items_per_page) > 0)
-		{
+		if (($total_items % $items_per_page) > 0) {
 			$total_pages++;
 		}
 
-		if (!empty($_GET['subpage']))
-		{
+		if (!empty($_GET['subpage'])) {
 			$current_page = intval($_GET['subpage']);
 		}
 
@@ -1291,8 +1131,7 @@ function site_polls_page()
 
 			$page_links = paginate_links($pagelink_args);
 
-			if (!empty($page_links))
-			{
+			if (!empty($page_links)) {
 ?>
 		<p><?php echo $page_links ?></p>
 <?php
@@ -1310,22 +1149,17 @@ function site_polls_page()
 			</tr>
 <?php
 
-	if (empty($polls) || !is_array($polls) || (count($polls) <= 0))
-	{
+	if (empty($polls) || !is_array($polls) || (count($polls) <= 0)) {
 ?>
 			<tr>
 				<td colspan="5"><p><?php _e('Currently, you do not have any active polls.', 'site-polls'); ?></p></td>
 			</tr>
 <?php
-	}
-	else
-	{
-		foreach ($polls as $poll)
-		{
+	} else {
+		foreach ($polls as $poll) {
 			$theme = "blue";
 
-			if (!empty($poll['style']['theme']))
-			{
+			if (!empty($poll['style']['theme'])) {
 				$theme = $poll['style']['theme'];
 			}
 
@@ -1334,12 +1168,9 @@ function site_polls_page()
 				<td class="site-polls-td-id"><?php echo $poll['id']; ?></td>
 				<td class="site-polls-td-title"><?php
 
-					if (!empty($poll['title']))
-					{
+					if (!empty($poll['title'])) {
 						echo esc_html(stripslashes($poll['title']));
-					}
-					else
-					{
+					} else {
 						echo __('(No title)', 'site-polls');
 					}
 
@@ -1361,8 +1192,7 @@ function site_polls_page()
 
 			$page_links = paginate_links($pagelink_args);
 
-			if (!empty($page_links))
-			{
+			if (!empty($page_links)) {
 ?>
 		<p><?php echo $page_links ?></p>
 <?php
@@ -1381,25 +1211,18 @@ function site_polls_page()
 	}
 }
 
-function site_polls_settings_page()
-{
+function site_polls_settings_page() {
 	$site_polls_remove_db = false;
 
-	if (!empty($_POST['site_polls_save_settings']) && ($_POST['site_polls_save_settings'] == 'yes'))
-	{
-		if (site_polls_checked('site_polls_remove_db'))
-		{
+	if (!empty($_POST['site_polls_save_settings']) && ($_POST['site_polls_save_settings'] == 'yes')) {
+		if (site_polls_checked('site_polls_remove_db')) {
 			$site_polls_remove_db = true;
-		}
-		else
-		{
+		} else {
 			$site_polls_remove_db = false;
 		}
 
 		update_option('site_polls_remove_db', $site_polls_remove_db);
-	}
-	else
-	{
+	} else {
 		$site_polls_remove_db = get_option('site_polls_remove_db', false);
 	}
 

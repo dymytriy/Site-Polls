@@ -1248,5 +1248,3 @@ function site_polls_settings_page() {
 </div>
 <?php
 }
-
-?>
